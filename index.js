@@ -30,7 +30,6 @@ const setupRoutes = function(app) {
   	res.status(200).end();
   })
   router.get('/:shorturl', (req, res) => {
-  	console.log("Got request!");
  		var true_url = urlmap[req.params.shorturl];
 	 	if (!true_url) {
 	 		res.status(404).end();
