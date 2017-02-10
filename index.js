@@ -1,16 +1,18 @@
-
 const express = require('express');
 const tabletop = require('tabletop');
 const app = express();
+const config = require('./config');
+
+if (config.SHEET_KEY === 'YOUR_SHEET_KEY_HERE') {
+  throw new Error("You must first change the sheet key in config.js before starting.");
+}
 
 // Map shorturl path to actual URL
 var urlmap = {};
 
-var REFRESH_INTERVAL = 60*60*1000;
-
 function fetch_url_sheet(uri) {
 	tabletop.init({
-    key: 'https://docs.google.com/spreadsheets/d/1aAuh2LueJ-2YuGphBIS-OQn4DfrZzOsU3pcwlSUGrjM/pubhtml',
+    key: config.SHEET_KEY,
     simpleSheet: true,
     callback: function (data, tabletop) {
       urlmap = {};
@@ -43,7 +45,7 @@ const setupRoutes = function(app) {
 
 if (module === require.main) {
 	fetch_url_sheet();
-	setInterval(fetch_url_sheet, REFRESH_INTERVAL);
+	setInterval(fetch_url_sheet, config.REFRESH_INTERVAL);
   setupRoutes(app);
 	const port = process.env.DOCKER_PORT || 8000;
   var server = app.listen(port, function () {
