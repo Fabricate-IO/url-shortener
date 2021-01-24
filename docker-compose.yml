@@ -1,0 +1,8 @@
+services:
+  url_shortener:
+    container_name: url_shortener
+    image: url_shortener
+    build: .
+    ports:
+      - "7889:8000/tcp"
+    restart: unless-stopped
