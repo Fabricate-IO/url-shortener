@@ -1,8 +1,8 @@
 services:
   url_shortener:
     container_name: url_shortener
-    image: url_shortener
+    image: registry.mkr.house:443/url_shortener
     build: .
     ports:
-      - "7889:8000/tcp"
+      - "8000:8000/tcp"
     restart: always

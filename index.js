@@ -1,5 +1,5 @@
 const express = require('express');
-const tabletop = require('tabletop');
+const request = require('request');
 const app = express();
 const config = require('./config');
 
@@ -11,16 +11,24 @@ if (config.SHEET_KEY === 'YOUR_SHEET_KEY_HERE') {
 var urlmap = {};
 
 function fetch_url_sheet(uri) {
-	tabletop.init({
-    key: config.SHEET_KEY,
-    simpleSheet: true,
-    callback: function (data, tabletop) {
-      urlmap = {};
-      console.log("URL map updated");
-      for (var i = 0; i < data.length; i++) {
-        urlmap[data[i]['ShortURL segment']] = data[i]['Target URL'];
-      }
+  request('https://docs.google.com/spreadsheets/d/e/' + config.SHEET_KEY + '/pub?gid=0&single=true&output=csv', (err, resp, body) => {
+    if( err !== null) {
+      console.error(err);
+      return;
+    } else if (resp.statusCode !== 200) {
+      console.error("GET response " + resp.statusCode);
+      return;
     }
+    let newmap = {}
+    for (let line of body.split("\n")) {
+      let csv = line.split(",");
+      if (!csv[1].startsWith("http")) {
+        continue; // Likely the header
+      } 
+      newmap[csv[0]] = csv[1];
+    }
+    urlmap = newmap;
+    console.log("URL map updated (" + Object.keys(urlmap).length + " items)");
   });
 }
 
@@ -35,9 +43,11 @@ const setupRoutes = function(app) {
  		var true_url = urlmap[req.params.shorturl];
 	 	if (!true_url) {
 	 		res.status(404).end();
+      console.log("404 NOTFOUND " + req.params.shorturl);
 	 		return;
 	 	}
     res.header('Location', true_url);
+    console.log("301 OK/REDIRECT " + req.params.shorturl);
     res.status(301).end();
   });
   app.use(router);
