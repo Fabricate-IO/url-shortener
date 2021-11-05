@@ -5,4 +5,4 @@ services:
     build: .
     ports:
       - "7889:8000/tcp"
-    restart: unless-stopped
+    restart: always
